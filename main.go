@@ -104,9 +104,9 @@ func deleteProdukByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	//GET localhost:8080/api/produk/{id} -> detail product
-	//PUT localhost:8080/api/produk/{id} -> update product
-	//DELETE localhost:8080/api/produk/{id} -> delete product
+	//GET localhost:8085/api/produk/{id} -> detail product
+	//PUT localhost:8085/api/produk/{id} -> update product
+	//DELETE localhost:8085/api/produk/{id} -> delete product
 	http.HandleFunc("/api/produk/", func(w http.ResponseWriter, r *http.Request) {
 		//validasi method
 		if r.Method == "GET" {
@@ -118,8 +118,8 @@ func main() {
 		}
 	})
 
-	//GET localhost:8080/api/produk
-	//POST localhost:8080/api/produk
+	//GET localhost:8085/api/produk
+	//POST localhost:8085/api/produk
 	http.HandleFunc("/api/produk", func(w http.ResponseWriter, r *http.Request) {
 		//cek requestnya
 		if r.Method == "GET" {
@@ -152,11 +152,11 @@ func main() {
 			"message": "API Running",
 		}) // response json
 		// w.Write([]byte("Ok"))
-	}) //localhost:8080/health
+	}) //localhost:8085/health
 
 	//initial and running server
-	fmt.Print("Server running di localhost:8080")
-	err := http.ListenAndServe(":8080", nil)
+	fmt.Print("Server running di localhost:8085")
+	err := http.ListenAndServe(":8085", nil)
 	if err != nil {
 		fmt.Print("gagal running server")
 	}
