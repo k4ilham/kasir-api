@@ -149,7 +149,7 @@ func main() {
 		w.Header().Set("Content-Type", "application/json") //header
 		json.NewEncoder(w).Encode(map[string]string{
 			"status":  "OK",
-			"message": "API Running yes",
+			"message": "API Running OK",
 		}) // response json
 		// w.Write([]byte("Ok"))
 	}) //localhost:8085/health
