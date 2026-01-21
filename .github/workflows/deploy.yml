@@ -19,4 +19,4 @@ jobs:
           git pull origin main
           go mod tidy
           go build -o kasir-api
-          systemctl restart kasir-api
+          sudo systemctl restart kasir-api
