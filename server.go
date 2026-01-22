@@ -16,7 +16,7 @@ import (
 func homeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write([]byte("Running on port :8085"))
+	_, _ = w.Write([]byte("Running on port :8080"))
 }
 
 func health2Handler(w http.ResponseWriter, r *http.Request) {
@@ -36,12 +36,12 @@ func StartServer() {
 	mux.HandleFunc("/health", health2Handler)
 
 	server := &http.Server{
-		Addr:    ":8085",
+		Addr:    ":8080",
 		Handler: mux,
 	}
 
 	go func() {
-		log.Println("Server running di localhost:8085")
+		log.Println("Server running di localhost:8080")
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("gagal running server: %v", err)
 		}
