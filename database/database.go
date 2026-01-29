@@ -3,58 +3,54 @@ package database
 import (
 	"database/sql"
 	"log"
+	"time"
 
 	_ "github.com/lib/pq"
 )
 
 func InitDB(connectionString string) (*sql.DB, error) {
+	if connectionString == "" {
+		log.Fatal("DB_CONN environment variable is empty")
+	}
+
 	// Open database
 	db, err := sql.Open("postgres", connectionString)
 	if err != nil {
 		return nil, err
 	}
 
-	// Batasi koneksi untuk efisiensi di Railway/Supabase
-	db.SetMaxOpenConns(5)
+	// Pengaturan koneksi agar stabil dengan Pooler Supabase
+	db.SetMaxOpenConns(4)
 	db.SetMaxIdleConns(2)
+	db.SetConnMaxLifetime(30 * time.Minute)
+	db.SetConnMaxIdleTime(5 * time.Minute)
 
-	// Kita nonaktifkan Ping dan Migrate untuk menghindari EOF di Pooler
-	// Pastikan tabel sudah dibuat manual di dashboard Supabase
-	log.Println("Database connection string initialized")
+	// Coba ping sekali untuk memastikan kredensial benar
+	// Jika gagal di sini, berarti URL atau Password salah
+	err = db.Ping()
+	if err != nil {
+		log.Printf("Ping failed: %v", err)
+		// Kita tidak log.Fatal agar server tidak restart terus-menerus di Railway
+		// Tapi kita kembalikan error agar terlihat di log
+		return db, err
+	}
 
+	log.Println("Database connection established and verified")
 	return db, nil
 }
 
-// Migrate tetap ada jika ingin dipanggil manual, tapi tidak dijalankan otomatis
 func Migrate(db *sql.DB) error {
-	log.Println("Running manual migration...")
+	log.Println("Attempting manual migration...")
+	// Query tetap sama
+	queryCategories := `CREATE TABLE IF NOT EXISTS categories (id SERIAL PRIMARY KEY, name VARCHAR(255) NOT NULL, description TEXT);`
+	queryProducts := `CREATE TABLE IF NOT EXISTS products (id SERIAL PRIMARY KEY, name VARCHAR(255) NOT NULL, price INT NOT NULL, stock INT NOT NULL, category_id INT REFERENCES categories(id) ON DELETE SET NULL);`
 
-	queryCategories := `
-	CREATE TABLE IF NOT EXISTS categories (
-		id SERIAL PRIMARY KEY,
-		name VARCHAR(255) NOT NULL,
-		description TEXT
-	);`
-
-	queryProducts := `
-	CREATE TABLE IF NOT EXISTS products (
-		id SERIAL PRIMARY KEY,
-		name VARCHAR(255) NOT NULL,
-		price INT NOT NULL,
-		stock INT NOT NULL,
-		category_id INT REFERENCES categories(id) ON DELETE SET NULL
-	);`
-
-	_, err := db.Exec(queryCategories)
-	if err != nil {
+	if _, err := db.Exec(queryCategories); err != nil {
 		return err
 	}
-
-	_, err = db.Exec(queryProducts)
-	if err != nil {
+	if _, err := db.Exec(queryProducts); err != nil {
 		return err
 	}
-
-	log.Println("Manual migration completed")
+	log.Println("Manual migration successful")
 	return nil
 }
