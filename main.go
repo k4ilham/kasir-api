@@ -44,6 +44,12 @@ func main() {
 	if err != nil {
 		log.Fatal("Failed to initialize database:", err)
 	}
+
+	// Jalankan migrasi tabel
+	err = database.Migrate(db)
+	if err != nil {
+		log.Printf("Migration warning: %v", err)
+	}
 	defer db.Close()
 
 	// 3. Dependency Injection

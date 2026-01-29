@@ -3,28 +3,55 @@ package database
 import (
 	"database/sql"
 	"log"
+	"time"
 
 	_ "github.com/lib/pq"
 )
 
 func InitDB(connectionString string) (*sql.DB, error) {
-	// Open database (sql.Open tidak langsung melakukan koneksi ke DB)
+	// 1. Inisialisasi driver
 	db, err := sql.Open("postgres", connectionString)
 	if err != nil {
 		return nil, err
 	}
 
-	// Set limit seminimal mungkin
-	db.SetMaxOpenConns(3)
+	// 2. Setting koneksi agar tidak cepat timeout
+	db.SetMaxOpenConns(2)
 	db.SetMaxIdleConns(1)
+	db.SetConnMaxLifetime(15 * time.Minute)
 
-	// Kita hapus Ping() agar server tidak crash saat startup jika DB delay
-	log.Println("Database driver initialized (Lazy Connection)")
+	// 3. Tes koneksi saat startup
+	// Kita gunakan loop kecil agar memberi waktu DB untuk siap
+	for i := 0; i < 3; i++ {
+		err = db.Ping()
+		if err == nil {
+			log.Println("Successfully connected to database!")
+			return db, nil
+		}
+		log.Printf("Attempt %d: Could not connect to database, retrying... (%v)", i+1, err)
+		time.Sleep(2 * time.Second)
+	}
 
-	return db, nil
+	return db, err
 }
 
 func Migrate(db *sql.DB) error {
-	// Fungsi ini tetap ada tapi tidak dipanggil otomatis di main.go
-	return nil
+	// Kita kembalikan fitur Migrate agar tabel dibuat otomatis
+	// asalkan kita sudah pindah ke Port 5432 (Session Mode)
+	query := `
+	CREATE TABLE IF NOT EXISTS categories (
+		id SERIAL PRIMARY KEY,
+		name VARCHAR(255) NOT NULL,
+		description TEXT
+	);
+	CREATE TABLE IF NOT EXISTS products (
+		id SERIAL PRIMARY KEY,
+		name VARCHAR(255) NOT NULL,
+		price INT NOT NULL,
+		stock INT NOT NULL,
+		category_id INT REFERENCES categories(id) ON DELETE SET NULL
+	);`
+
+	_, err := db.Exec(query)
+	return err
 }
