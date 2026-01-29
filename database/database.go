@@ -14,30 +14,20 @@ func InitDB(connectionString string) (*sql.DB, error) {
 		return nil, err
 	}
 
-	// Supabase Free Tier punya limit koneksi kecil
-	// Kita set lebih rendah agar tidak kena kicked oleh Pooler
+	// Batasi koneksi untuk efisiensi di Railway/Supabase
 	db.SetMaxOpenConns(5)
 	db.SetMaxIdleConns(2)
 
-	// Test connection
-	err = db.Ping()
-	if err != nil {
-		return nil, err
-	}
-
-	log.Println("Database connected successfully")
-
-	// Run auto migration
-	err = Migrate(db)
-	if err != nil {
-		log.Println("Migration failed:", err)
-	}
+	// Kita nonaktifkan Ping dan Migrate untuk menghindari EOF di Pooler
+	// Pastikan tabel sudah dibuat manual di dashboard Supabase
+	log.Println("Database connection string initialized")
 
 	return db, nil
 }
 
+// Migrate tetap ada jika ingin dipanggil manual, tapi tidak dijalankan otomatis
 func Migrate(db *sql.DB) error {
-	log.Println("Running auto migration...")
+	log.Println("Running manual migration...")
 
 	queryCategories := `
 	CREATE TABLE IF NOT EXISTS categories (
@@ -65,6 +55,6 @@ func Migrate(db *sql.DB) error {
 		return err
 	}
 
-	log.Println("Auto migration completed")
+	log.Println("Manual migration completed")
 	return nil
 }
