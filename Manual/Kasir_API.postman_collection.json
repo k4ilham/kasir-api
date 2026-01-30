@@ -1,0 +1,240 @@
+{
+  "info": {
+    "name": "Kasir API",
+    "description": "API Collection untuk Kasir API - Point of Sale System",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "kasir-api-v1"
+  },
+  "item": [
+    {
+      "name": "System",
+      "item": [
+        {
+          "name": "Home",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            },
+            "description": "Endpoint untuk mengecek apakah server berjalan"
+          },
+          "response": []
+        },
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            },
+            "description": "Endpoint untuk health check API"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "Get All Categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/categories",
+              "host": ["{{base_url}}"],
+              "path": ["api", "categories"]
+            },
+            "description": "Mendapatkan semua data kategori"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Category by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/categories/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "categories", "1"]
+            },
+            "description": "Mendapatkan detail kategori berdasarkan ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Category",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Elektronik\",\n  \"description\": \"Kategori produk elektronik\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/categories",
+              "host": ["{{base_url}}"],
+              "path": ["api", "categories"]
+            },
+            "description": "Membuat kategori baru"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Category",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Elektronik Updated\",\n  \"description\": \"Kategori produk elektronik dan gadget\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/categories/3",
+              "host": ["{{base_url}}"],
+              "path": ["api", "categories", "3"]
+            },
+            "description": "Mengupdate data kategori berdasarkan ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Category",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/categories/3",
+              "host": ["{{base_url}}"],
+              "path": ["api", "categories", "3"]
+            },
+            "description": "Menghapus kategori berdasarkan ID"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "Get All Products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/produk",
+              "host": ["{{base_url}}"],
+              "path": ["api", "produk"]
+            },
+            "description": "Mendapatkan semua data produk"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Product by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/produk/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "produk", "1"]
+            },
+            "description": "Mendapatkan detail produk berdasarkan ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Product",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Mie Goreng\",\n  \"price\": 12000,\n  \"stock\": 30,\n  \"category_id\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/produk",
+              "host": ["{{base_url}}"],
+              "path": ["api", "produk"]
+            },
+            "description": "Membuat produk baru"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Product",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Mie Goreng Spesial\",\n  \"price\": 15000,\n  \"stock\": 25,\n  \"category_id\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/produk/3",
+              "host": ["{{base_url}}"],
+              "path": ["api", "produk", "3"]
+            },
+            "description": "Mengupdate data produk berdasarkan ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Product",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/produk/3",
+              "host": ["{{base_url}}"],
+              "path": ["api", "produk", "3"]
+            },
+            "description": "Menghapus produk berdasarkan ID"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    }
+  ]
+}

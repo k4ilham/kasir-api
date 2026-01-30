@@ -1,43 +1,43 @@
 package database
 
 import (
+	"context"
 	"database/sql"
+	"fmt"
 	"log"
 	"time"
 
-	_ "github.com/lib/pq"
+	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 func InitDB(connectionString string) (*sql.DB, error) {
-	// 1. Inisialisasi driver
-	db, err := sql.Open("postgres", connectionString)
+	// 1. Inisialisasi driver dengan pgx
+	db, err := sql.Open("pgx", connectionString)
 	if err != nil {
 		return nil, err
 	}
 
 	// 2. Setting koneksi agar tidak cepat timeout
-	db.SetMaxOpenConns(2)
-	db.SetMaxIdleConns(1)
+	db.SetMaxOpenConns(10)
+	db.SetMaxIdleConns(5)
 	db.SetConnMaxLifetime(15 * time.Minute)
+	db.SetConnMaxIdleTime(5 * time.Minute)
 
 	// 3. Tes koneksi saat startup
-	// Kita gunakan loop kecil agar memberi waktu DB untuk siap
-	for i := 0; i < 3; i++ {
-		err = db.Ping()
-		if err == nil {
-			log.Println("Successfully connected to database!")
-			return db, nil
-		}
-		log.Printf("Attempt %d: Could not connect to database, retrying... (%v)", i+1, err)
-		time.Sleep(2 * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	err = db.PingContext(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
 
-	return db, err
+	log.Println("Successfully connected to database!")
+	return db, nil
 }
 
 func Migrate(db *sql.DB) error {
-	// Kita kembalikan fitur Migrate agar tabel dibuat otomatis
-	// asalkan kita sudah pindah ke Port 5432 (Session Mode)
+	// Membuat tabel jika belum ada
 	query := `
 	CREATE TABLE IF NOT EXISTS categories (
 		id SERIAL PRIMARY KEY,
@@ -52,6 +52,14 @@ func Migrate(db *sql.DB) error {
 		category_id INT REFERENCES categories(id) ON DELETE SET NULL
 	);`
 
-	_, err := db.Exec(query)
-	return err
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	_, err := db.ExecContext(ctx, query)
+	if err != nil {
+		return fmt.Errorf("migration failed: %w", err)
+	}
+
+	log.Println("Database migration completed successfully!")
+	return nil
 }
