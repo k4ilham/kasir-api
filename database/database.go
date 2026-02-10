@@ -50,6 +50,19 @@ func Migrate(db *sql.DB) error {
 		price INT NOT NULL,
 		stock INT NOT NULL,
 		category_id INT REFERENCES categories(id) ON DELETE SET NULL
+	);
+	CREATE TABLE IF NOT EXISTS transactions (
+	    id SERIAL PRIMARY KEY,
+	    total_amount INT NOT NULL,
+	    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	);
+
+	CREATE TABLE IF NOT EXISTS transaction_details (
+	    id SERIAL PRIMARY KEY,
+	    transaction_id INT REFERENCES transactions(id) ON DELETE CASCADE,
+	    product_id INT REFERENCES products(id),
+	    quantity INT NOT NULL,
+	    subtotal INT NOT NULL
 	);`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)

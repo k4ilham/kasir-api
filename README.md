@@ -22,7 +22,9 @@ API backend untuk aplikasi kasir (Point of Sale) yang dibangun menggunakan Go da
 ## ✨ Fitur
 
 - ✅ Manajemen Kategori Produk (CRUD)
-- ✅ Manajemen Produk (CRUD)
+- ✅ Manajemen Produk (CRUD + Search by Name)
+- ✅ Transaksi / Checkout
+- ✅ Laporan Penjualan (Harian & Periode)
 - ✅ Koneksi Database PostgreSQL dengan Supabase
 - ✅ Auto Migration Database
 - ✅ Health Check Endpoint
@@ -519,7 +521,34 @@ curl http://localhost:8080/api/produk
 
 ---
 
-#### 2. Get Product by ID
+#### 2. Search Products
+**Endpoint:** `GET /api/produk?name={keyword}`
+
+**Deskripsi:** Mencari produk berdasarkan nama (case-insensitive).
+
+**Request:**
+```bash
+curl http://localhost:8080/api/produk?name=nas
+```
+
+**Response Success:**
+```json
+[
+  {
+    "id": 1,
+    "name": "Nasi Goreng",
+    "price": 15000,
+    "stock": 50,
+    "category_id": 1
+  }
+]
+```
+
+**Status Code:** `200 OK`
+
+---
+
+#### 3. Get Product by ID
 **Endpoint:** `GET /api/produk/{id}`
 
 **Deskripsi:** Mendapatkan detail produk berdasarkan ID.
@@ -701,6 +730,91 @@ curl -X DELETE http://localhost:8080/api/produk/3
 
 ---
 
+### 🛒 Transaction Endpoints
+
+#### 1. Checkout
+**Endpoint:** `POST /api/checkout`
+
+**Deskripsi:** Memproses transaksi pembelian. Mengurangi stok produk dan mencatat detail transaksi.
+
+**Request Body:**
+```json
+{
+  "items": [
+    {
+      "product_id": 1,
+      "quantity": 2
+    },
+    {
+      "product_id": 2,
+      "quantity": 1
+    }
+  ]
+}
+```
+
+**Response Success:**
+```json
+{
+  "id": 1,
+  "total_amount": 35000,
+  "created_at": "2026-02-10T10:00:00Z",
+  "details": [
+    {
+      "id": 0,
+      "transaction_id": 1,
+      "product_id": 1,
+      "product_name": "Nasi Goreng",
+      "quantity": 2,
+      "subtotal": 30000
+    },
+    {
+      "id": 0,
+      "transaction_id": 1,
+      "product_id": 2,
+      "product_name": "Es Teh Manis",
+      "quantity": 1,
+      "subtotal": 5000
+    }
+  ]
+}
+```
+
+**Status Code:** `200 OK`
+
+---
+
+### 📈 Report Endpoints
+
+#### 1. Daily Report (Hari Ini)
+**Endpoint:** `GET /api/report/hari-ini`
+
+**Deskripsi:** Mendapatkan laporan penjualan hari ini.
+
+**Response:**
+```json
+{
+  "total_revenue": 45000,
+  "total_transaksi": 5,
+  "produk_terlaris": {
+    "nama": "Indomie Goreng",
+    "qty_terjual": 12
+  }
+}
+```
+
+#### 2. Report by Date Range
+**Endpoint:** `GET /api/report?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD`
+
+**Deskripsi:** Mendapatkan laporan penjualan berdasarkan rentang tanggal.
+
+**Request:**
+```bash
+curl "http://localhost:8080/api/report?start_date=2026-02-01&end_date=2026-02-28"
+```
+
+---
+
 ### 📊 HTTP Status Codes
 
 API ini menggunakan status code HTTP standar:
@@ -754,6 +868,24 @@ API ini menggunakan status code HTTP standar:
 | stock | INT | NOT NULL |
 | category_id | INT | FOREIGN KEY → categories(id) |
 
+### Table: transactions
+
+| Column | Type | Constraint |
+|--------|------|------------|
+| id | SERIAL | PRIMARY KEY |
+| total_amount | INT | NOT NULL |
+| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP |
+
+### Table: transaction_details
+
+| Column | Type | Constraint |
+|--------|------|------------|
+| id | SERIAL | PRIMARY KEY |
+| transaction_id | INT | FOREIGN KEY → transactions(id) |
+| product_id | INT | FOREIGN KEY → products(id) |
+| quantity | INT | NOT NULL |
+| subtotal | INT | NOT NULL |
+
 ## 📁 Struktur Project
 
 ```
@@ -762,18 +894,26 @@ kasir-api/
 │   └── database.go          # Database initialization & migration
 ├── handlers/
 │   ├── category_handler.go  # HTTP handlers untuk categories
-│   └── product_handler.go   # HTTP handlers untuk products
+│   ├── product_handler.go   # HTTP handlers untuk products
+│   ├── transaction_handler.go # HTTP handlers untuk transactions
+│   └── report_handler.go    # HTTP handlers untuk reports
 ├── models/
 │   ├── category.go          # Model Category
-│   └── product.go           # Model Product
+│   ├── product.go           # Model Product
+│   ├── transaction.go       # Model Transaction
+│   └── report.go            # Model Report
 ├── repositories/
 │   ├── category_repository.go  # Database operations untuk categories
-│   └── product_repository.go   # Database operations untuk products
+│   ├── product_repository.go   # Database operations untuk products
+│   ├── transaction_repository.go # Database operations untuk transactions
+│   └── report_repository.go    # Database operations untuk reports
 ├── response/
 │   └── response.go          # Response helper
 ├── services/
 │   ├── category_service.go  # Business logic untuk categories
 │   └── product_service.go   # Business logic untuk products
+│   ├── transaction_service.go  # Business logic untuk transactions
+│   └── report_service.go       # Business logic untuk reports
 ├── .env                     # Environment configuration (tidak di-commit)
 ├── .env.example             # Template environment configuration
 ├── .gitignore              # Git ignore rules
